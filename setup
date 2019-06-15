@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+
+function init() {
+    # setup replacer
+    #rm -rf _tmp
+    #mkdir _tmp
+    #docker pull ${DOCKER_IMAGE_CONFIGURER}
+    #wget -O _tmp/flash ${FLASH_SCRIPT}
+    #chmod +x _tmp/flash
+    #wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
+    unzip _tmp/hypriotos.zip -d _tmp
+    mv _tmp/hypriotos-*.img _tmp/hypriotos.img
+    config_render
+}
+
+
+function config_render() {
+    docker run --rm --volume $MY_CONFIG_FOLDER:/source:ro --volume $MY_OUTPUT_FOLDER:/output --volume $MY_VAR_FILE:/vars/var_file:ro iago1460/configurer
+}
+
+function flash_sd() {
+    ./tools/flash --bootconf config/hypriot/bootconf.txt --userdata config/hypriot/cloud_init.yml _tmp/hypriotos.img
+}
+
+function flash_sd_wifi() {
+    ./tools/flash --bootconf config/hypriot/bootconf.txt --userdata config/hypriot/cloud_init_wifi.yml --config config/hypriot/device_init.yml _tmp/hypriotos.img
+}
+
+function import_config() {
+    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./rpi_config/
+    echo "Config imported"
+}
+
+
+function export_config() {
+    rsync -avz -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
+    rsync -r -a -v -e ssh --rsync-path="sudo rsync" ./config/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
+    echo "Config exported"
+}
+
+
+# Run user entered command at app level, or fallback to docker-compose
+if [ "$(type -t $1)" == 'function' ]; then
+    func=$1
+    shift
+    $func "$@"
+else
+    echo "Unknown command"
+fi
+exit $?

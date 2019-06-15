@@ -1,0 +1,34 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+# http:
+#   base_url: example.duckdns.org:8123
+
+# Sensors
+sensor:
+  # Weather prediction
+  - platform: yr
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+# Custom config
+mqtt:
+  broker: 127.0.0.1
+
+http:
+  base_url: {{ FQSN }}
+  use_x_forwarded_for: True
+  trusted_proxies: 127.0.0.1
+  ip_ban_enabled: True
+  login_attempts_threshold: 5
+
+homeassistant:
+  time_zone: {{ TZ }}

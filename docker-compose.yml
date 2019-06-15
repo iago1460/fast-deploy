@@ -1,0 +1,152 @@
+version: "3.6"
+services:
+
+  traefik:
+    hostname: traefik
+    image: $DOCKER_IMAGE_TRAEFIKT
+    container_name: traefik
+    restart: always
+    domainname: ${FQSN}
+    network_mode: host
+#    networks:
+#      traefik_proxy:
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    environment:
+      - DUCKDNS_TOKEN=${DUCKDNS_TOKEN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik/traefik.toml:/etc/traefik/traefik.toml
+      - ./config/traefik/acme.json:/etc/traefik/acme/acme.json
+      - ./config/traefik/logs/:/etc/traefik/logs/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=traefik"
+      - "traefik.frontend.rule=Host:${FQSN}; PathPrefixStrip: /traefik"
+      - "traefik.port=8080"
+
+      - "traefik.frontend.auth.basic.users=${AUTH_BASIC}"
+      - "traefik.frontend.auth.digest.removeHeader=true"
+
+      - "traefik.frontend.headers.SSLRedirect=true"
+      - "traefik.frontend.headers.STSSeconds=315360000"
+      - "traefik.frontend.headers.browserXSSFilter=true"
+      - "traefik.frontend.headers.contentTypeNosniff=true"
+      - "traefik.frontend.headers.forceSTSHeader=true"
+      - "traefik.frontend.headers.SSLHost=${FQSN}"
+      - "traefik.frontend.headers.STSIncludeSubdomains=true"
+      - "traefik.frontend.headers.STSPreload=true"
+      - "traefik.frontend.headers.frameDeny=true"
+
+  fail2ban-docker:
+    image: $DOCKER_IMAGE_FAIL2BAN
+    network_mode: host
+    container_name: fail2ban-docker
+    environment:
+      - TZ
+      - F2B_IPTABLES_CHAIN=DOCKER-USER
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./config/homeassistant/home-assistant.log:/var/logs/homeassistant/home-assistant.log:ro
+      - ./config/traefik/logs/:/var/logs/traefik/:ro
+      - ./config/fail2ban/docker:/data
+    restart: unless-stopped
+
+  fail2ban-input:
+    image: $DOCKER_IMAGE_FAIL2BAN
+    network_mode: host
+    container_name: fail2ban-input
+    environment:
+      - TZ
+      - F2B_IPTABLES_CHAIN=INPUT
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - /var/log:/var/log:ro
+      - ./config/fail2ban/input:/data
+    restart: unless-stopped
+
+  homeassistant:
+    container_name: homeassistant
+    restart: always
+    image: $DOCKER_IMAGE_HOMEASSISTANT
+    volumes:
+      - ./config/homeassistant/:/config/
+      - /etc/localtime:/etc/localtime:ro
+    privileged: true
+    environment:
+      - PUID
+      - PGID
+      - TZ
+    network_mode: host
+#    networks:
+#      traefik_proxy:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:${FQSN}"
+      - "traefik.frontend.headers.STSSeconds=15552000"
+      - "traefik.port=8123"
+      - "traefik.protocol=http"
+      - "traefik.frontend.whiteList.useXForwardedFor=true"
+      - "traefik.frontend.passHostHeader=true"
+
+  mosquitto:
+    image: $DOCKER_IMAGE_MOSQUITTO
+    container_name: mosquitto
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/mosquitto/config/:/mosquitto/config/
+      - ./config/mosquitto/data/:/mosquitto/data/
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    restart: unless-stopped
+
+  duckdns:
+    image: $DOCKER_IMAGE_DUCKDNS
+    container_name: duckdns
+    environment:
+      - TZ
+      - SUBDOMAINS=$DUCKDNS_SUBDOMAIN
+      - TOKEN=$DUCKDNS_TOKEN
+    restart: unless-stopped
+
+  deconz:
+    image: $DOCKER_IMAGE_DECONZ
+    container_name: deconz
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/deconz:/root/.local/share/dresden-elektronik/deCONZ
+    devices:
+      - /dev/ttyACM0
+    environment:
+      - DECONZ_WEB_PORT=1080
+      - DECONZ_WS_PORT=1443
+      - DEBUG_INFO=1
+      - DEBUG_APS=0
+      - DEBUG_ZCL=0
+      - DEBUG_ZDP=0
+      - DEBUG_OTAU=0
+      - DECONZ_DEVICE=/dev/ttyACM0
+    labels:
+      - "traefik.enable=false"
+      - "traefik.frontend.rule=Host:${FQSN}; PathPrefixStrip: /deconz"
+      - "traefik.port=1080"
+
+      - "traefik.protocol=http"
+      - "traefik.frontend.auth.basic.users=${AUTH_BASIC}"
+      - "traefik.frontend.auth.digest.removeHeader=true"
+
+#networks:
+#  traefik_proxy:
+#    external:
+#      name: traefik_proxy
+#  default:
+#    driver: bridge

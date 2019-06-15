@@ -1,0 +1,53 @@
+#cloud-config
+
+hostname: {{ HOSTNAME }}
+manage_etc_hosts: true
+apt_preserve_sources_list: true
+
+users:
+  - name: pirate
+    primary-group: users
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users,docker,adm,dialout,audio,plugdev,netdev,video
+    ssh-import-id: None
+    lock_passwd: true
+    ssh-authorized-keys:
+      - ssh-rsa {{ SSH_ID_RSA_PUB }}
+
+package_update: true
+package_upgrade: false
+package_reboot_if_required: true
+packages:
+  - ntp
+  - rsync
+
+timezone: {{ TZ }}
+
+write_files:
+  - content: |
+      allow-hotplug wlan0
+      iface wlan0 inet dhcp
+      wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+      iface default inet dhcp
+    path: /etc/network/interfaces.d/wlan0
+  - content: |
+      country={{ COUNTRY }}
+      ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+      update_config=1
+      network={
+      ssid="{{ WIFI_SSID }}"
+      psk="{{ WIFI_PASSWORD }}"
+      proto=RSN
+      key_mgmt=WPA-PSK
+      pairwise=CCMP
+      auth_alg=OPEN
+      }
+    path: /etc/wpa_supplicant/wpa_supplicant.conf
+
+runcmd:
+  # Pickup the hostname changes
+  - 'systemctl restart avahi-daemon'
+
+  # Activate WiFi interface
+  - 'ifup wlan0'

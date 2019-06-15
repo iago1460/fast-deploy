@@ -1,0 +1,29 @@
+#cloud-config
+
+hostname: {{ HOSTNAME }}
+manage_etc_hosts: true
+apt_preserve_sources_list: true
+
+users:
+  - name: pirate
+    primary-group: users
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users,docker,adm,dialout,audio,plugdev,netdev,video
+    ssh-import-id: None
+    lock_passwd: true
+    ssh-authorized-keys:
+      - ssh-rsa {{ SSH_ID_RSA_PUB }}
+
+package_update: true
+package_upgrade: false
+package_reboot_if_required: true
+packages:
+  - ntp
+  - rsync
+
+timezone: {{ TZ }}
+
+runcmd:
+  # Pickup the hostname changes
+  - 'systemctl restart avahi-daemon'
