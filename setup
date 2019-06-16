@@ -29,6 +29,7 @@ function init() {
     docker pull ${DOCKER_IMAGE_CONFIGURER}
     wget -O _tmp/flash ${FLASH_SCRIPT}
     chmod +x _tmp/flash
+    chmod 600 config_template/traefik/acme.json
     wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
     unzip _tmp/hypriotos.zip -d _tmp
     mv _tmp/hypriotos-*.img _tmp/hypriotos.img
