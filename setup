@@ -5,7 +5,7 @@ set -x
 
 
 function help() {
-  cat << EOF
+    cat << EOF
 usage: $0 [OPTIONS]
 
 Setup tools.
@@ -16,12 +16,17 @@ OPTIONS:
   render_config   Render the config_template folder
   flash_sd        Flash the sd card
   flash_sd_wifi   Flash the sd card with wifi support
-  backup   Import the config from the remote system
+  backup          Import the config from the remote system
   export_config   Renders and exports the config to the target system
 
 EOF
   exit 1
 }
+
+CONFIG_TEMPLATE_PATH=$(pwd)/config_template
+CONFIG_PATH=$(pwd)/_tmp/config
+VAR_FILE_PATH=$(pwd)/.env
+
 
 function init() {
     rm -rf _tmp
@@ -37,17 +42,16 @@ function init() {
     render_config
 }
 
-
 function render_config() {
-    docker run --rm --volume $MY_CONFIG_FOLDER:/source:ro --volume $MY_OUTPUT_FOLDER:/output --volume $MY_VAR_FILE:/vars/var_file:ro iago1460/configurer "$@"
+    docker run --rm --volume $CONFIG_TEMPLATE_PATH:/source:ro --volume $CONFIG_PATH:/output --volume $VAR_FILE_PATH:/vars/var_file:ro iago1460/configurer "$@"
 }
 
 function flash_sd() {
-    ./tools/flash --bootconf config/hypriot/bootconf.txt --userdata config/hypriot/cloud_init.yml _tmp/hypriotos.img
+    ./tools/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init.yml _tmp/hypriotos.img
 }
 
 function flash_sd_wifi() {
-    ./tools/flash --bootconf config/hypriot/bootconf.txt --userdata config/hypriot/cloud_init_wifi.yml --config config/hypriot/device_init.yml _tmp/hypriotos.img
+    ./tools/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init_wifi.yml --config ${CONFIG_PATH}/hypriot/device_init.yml _tmp/hypriotos.img
 }
 
 function backup() {
@@ -59,7 +63,7 @@ function backup() {
 function export_config() {
     render_config
     rsync -avz -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
-    rsync -r -a -v -e ssh --rsync-path="sudo rsync" ./config/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
+    rsync -r -a -v -e ssh --rsync-path="sudo rsync" ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
     echo "Config exported"
 }
 
