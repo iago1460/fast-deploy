@@ -36,29 +36,29 @@ Linux / Mac OS
 
 2 Open `.env` and fill `REPLACE_ME` with your data and **save the file**.
 
-2 Evaluate the environment variables file:
+3 Evaluate the environment variables file:
 
     source .env
 
-3 Give execution permissions to the `setup` script:
+4 Give execution permissions to the `setup` script:
 
     chmod +x setup
 
-4 Download additional resources
+5 Download additional resources
 
     ./setup init
 
-5 After running a new folder called `config` should have been created.
+6 After running a new folder called `config` should have been created.
 
-6 Insert a micro sd
+7 Insert a micro sd
 
-7 Flash the sd card choosing one of the following commands
+8 Flash the sd card choosing one of the following commands
 
     ./setup flash_sd
 
     ./setup flash_sd_wifi
 
-8 Put the micro sd in and boot the system.
+9 Put the micro sd in and boot the system.
 
 
 ### Last steps
@@ -75,7 +75,7 @@ Let's connect to the pi and run the system:
     source .env
     docker-compose up -d
 
-Once all works, import the config from rpi and store it in a save place
+Once all works, import the config from rpi and store it in a safe place
     
     ./setup import_config
 
@@ -84,7 +84,7 @@ Once all works, import the config from rpi and store it in a save place
 
 This repository is heavily based on the following work:
  
- * [HypriotOS](https://github.com/hypriot/image-builder-rpi) - HypriotOS is the fastest way to get Docker up and running on the Raspberry Pi. Download - Flash - Boot - Done.
+ * [HypriotOS](https://github.com/hypriot/image-builder-rpi) - HypriotOS is the fastest way to get Docker up and running on the Raspberry Pi.
  * [flash](https://github.com/hypriot/flash) - Command line script to flash SD card images of any kind.
- * [Configurer](https://github.com/iago1460/configurer) - A config render tool using based on Jinja template variables.
+ * [Configurer](https://github.com/iago1460/configurer) - A config render tool based on Jinja template variables.
 

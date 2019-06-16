@@ -4,22 +4,40 @@ set -e
 set -x
 
 
+function help() {
+  cat << EOF
+usage: $0 [OPTIONS]
+
+Setup tools.
+
+OPTIONS:
+  help            Show this message
+  init            Download and setup dependencies
+  render_config   Render the config_template folder
+  flash_sd        Flash the sd card
+  flash_sd_wifi   Flash the sd card with wifi support
+  import_config   Import the config from the remote system
+  export_config   Renders and exports the config to the target system
+
+EOF
+  exit 1
+}
+
 function init() {
-    # setup replacer
-    #rm -rf _tmp
-    #mkdir _tmp
-    #docker pull ${DOCKER_IMAGE_CONFIGURER}
-    #wget -O _tmp/flash ${FLASH_SCRIPT}
-    #chmod +x _tmp/flash
-    #wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
+    rm -rf _tmp
+    mkdir _tmp
+    docker pull ${DOCKER_IMAGE_CONFIGURER}
+    wget -O _tmp/flash ${FLASH_SCRIPT}
+    chmod +x _tmp/flash
+    wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
     unzip _tmp/hypriotos.zip -d _tmp
     mv _tmp/hypriotos-*.img _tmp/hypriotos.img
-    config_render
+    render_config
 }
 
 
-function config_render() {
-    docker run --rm --volume $MY_CONFIG_FOLDER:/source:ro --volume $MY_OUTPUT_FOLDER:/output --volume $MY_VAR_FILE:/vars/var_file:ro iago1460/configurer
+function render_config() {
+    docker run --rm --volume $MY_CONFIG_FOLDER:/source:ro --volume $MY_OUTPUT_FOLDER:/output --volume $MY_VAR_FILE:/vars/var_file:ro iago1460/configurer "$@"
 }
 
 function flash_sd() {
@@ -37,6 +55,7 @@ function import_config() {
 
 
 function export_config() {
+    render_config
     rsync -avz -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
     rsync -r -a -v -e ssh --rsync-path="sudo rsync" ./config/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
     echo "Config exported"
@@ -50,5 +69,6 @@ if [ "$(type -t $1)" == 'function' ]; then
     $func "$@"
 else
     echo "Unknown command"
+    help
 fi
 exit $?
