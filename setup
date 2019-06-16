@@ -35,10 +35,11 @@ function init() {
     docker pull ${DOCKER_IMAGE_CONFIGURER}
     wget -O _tmp/flash ${FLASH_SCRIPT}
     chmod +x _tmp/flash
-    chmod 600 config_template/traefik/acme.json
     wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
     unzip _tmp/hypriotos.zip -d _tmp
     mv _tmp/hypriotos-*.img _tmp/hypriotos.img
+    touch _tmp/acme.json
+    chmod 600 _tmp/acme.json
     render_config
 }
 
@@ -62,8 +63,12 @@ function backup() {
 
 function export_config() {
     render_config
+
     rsync -avz -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
     rsync -r -a -v -e ssh --rsync-path="sudo rsync" ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
+    # copy acme.json if it's not present
+    rsync --ignore-existing -avz -e ssh ./_tmp/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
+
     echo "Config exported"
 }
 
