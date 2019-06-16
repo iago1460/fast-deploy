@@ -79,9 +79,9 @@ Let's connect to the pi and run the system:
     source .env
     docker-compose up -d
 
-Once all works, import the config from rpi and store it in a safe place
+Once all works, import the data from rpi and store it in a safe place
     
-    ./setup import_config
+    ./setup backup
 
 
 ## Disclaimer

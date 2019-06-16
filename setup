@@ -16,7 +16,7 @@ OPTIONS:
   render_config   Render the config_template folder
   flash_sd        Flash the sd card
   flash_sd_wifi   Flash the sd card with wifi support
-  import_config   Import the config from the remote system
+  backup   Import the config from the remote system
   export_config   Renders and exports the config to the target system
 
 EOF
@@ -26,6 +26,7 @@ EOF
 function init() {
     rm -rf _tmp
     mkdir _tmp
+    mkdir backup
     docker pull ${DOCKER_IMAGE_CONFIGURER}
     wget -O _tmp/flash ${FLASH_SCRIPT}
     chmod +x _tmp/flash
@@ -49,9 +50,9 @@ function flash_sd_wifi() {
     ./tools/flash --bootconf config/hypriot/bootconf.txt --userdata config/hypriot/cloud_init_wifi.yml --config config/hypriot/device_init.yml _tmp/hypriotos.img
 }
 
-function import_config() {
-    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./rpi_config/
-    echo "Config imported"
+function backup() {
+    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./backup/${HOSTNAME}/
+    echo "Data imported"
 }
 
 
