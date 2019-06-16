@@ -3,7 +3,10 @@
 Setup and deploy projects through docker in the Raspberry Pi.
 
 Specifically this guide sets up a [Duck DNS](https://www.duckdns.org) domain over HTTPS 
-running [Home Assistant](https://www.home-assistant.io) secured with [Fail2ban](https://www.fail2ban.org)
+running [Home Assistant](https://www.home-assistant.io) secured with [Fail2ban](https://www.fail2ban.org).
+
+This setup has been develop against the raspberry pi 3 (ARM version 7).
+Check the architecture of your system and tweak the docker images accordingly.
 
 ## Content
 
@@ -17,6 +20,7 @@ This setup includes:
 * [Home Assistant](https://www.home-assistant.io) - Open source home automation that puts local control and privacy first.
 * [deCONZ](https://hub.docker.com/r/marthoc/deconz/) - deCONZ is a software that communicates with Conbee/Raspbee Zigbee gateways and exposes Zigbee devices that are connected to the gateway.
 
+To add or remove components just tweak the docker-compose file.
 
 ## Requirements
 
