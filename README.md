@@ -18,6 +18,7 @@ This setup includes:
 * [Fail2ban](https://www.fail2ban.org) - Fail2ban scans log files and bans IPs that show the malicious signs.
 * [Eclipse Mosquitto](https://mosquitto.org) - Eclipse Mosquitto is an open source message broker that implements the MQTT protocol.
 * [Home Assistant](https://www.home-assistant.io) - Open source home automation that puts local control and privacy first.
+* [AppDaemon](https://github.com/home-assistant/appdaemon) - AppDaemon is a loosely coupled, multithreaded, sandboxed, pluggable python execution environment for writing automation apps for Home Assistant home automation software.
 * [deCONZ](https://hub.docker.com/r/marthoc/deconz/) - deCONZ is a software that communicates with Conbee/Raspbee Zigbee gateways and exposes Zigbee devices that are connected to the gateway.
 
 To add or remove components just tweak the docker-compose file.

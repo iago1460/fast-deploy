@@ -1,0 +1,3 @@
+cube_control:
+  module: cube
+  class: CubeControl

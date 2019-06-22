@@ -5,7 +5,7 @@ services:
     hostname: traefik
     image: $DOCKER_IMAGE_TRAEFIKT
     container_name: traefik
-    restart: always
+    restart: unless-stopped
     domainname: ${FQSN}
     network_mode: host
 #    networks:
@@ -73,7 +73,7 @@ services:
 
   homeassistant:
     container_name: homeassistant
-    restart: always
+    restart: unless-stopped
     image: $DOCKER_IMAGE_HOMEASSISTANT
     volumes:
       - ./config/homeassistant/:/config/
@@ -94,6 +94,17 @@ services:
       - "traefik.protocol=http"
       - "traefik.frontend.whiteList.useXForwardedFor=true"
       - "traefik.frontend.passHostHeader=true"
+
+  appdaemon:
+    container_name: appdaemon
+    network_mode: host
+    build:
+      context: ./config/appdaemon
+      dockerfile: Dockerfile
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/appdaemon/:/conf/
+    restart: unless-stopped
 
   mosquitto:
     image: $DOCKER_IMAGE_MOSQUITTO
