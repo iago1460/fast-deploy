@@ -65,7 +65,7 @@ function export_config() {
     render_config
 
     rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
-    rsync -a --no-o --no-g -r -v -e ssh --rsync-path="sudo rsync" ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
+    rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
     # copy acme.json if it's not present
     rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ./_tmp/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
 
