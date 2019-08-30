@@ -23,23 +23,25 @@ EOF
   exit 1
 }
 
+TMP_PATH=$(pwd)/_tmp
 CONFIG_TEMPLATE_PATH=$(pwd)/config_template
-CONFIG_PATH=$(pwd)/_tmp/config
+CONFIG_PATH=${TMP_PATH}/config
 VAR_FILE_PATH=$(pwd)/.env
 
 
 function init() {
-    rm -rf _tmp
-    mkdir _tmp
-    mkdir backup
+    rm -rf ${TMP_PATH}
+    mkdir ${TMP_PATH}
+    mkdir -p backup
     docker pull ${DOCKER_IMAGE_CONFIGURER}
-    wget -O _tmp/flash ${FLASH_SCRIPT}
-    chmod +x _tmp/flash
-    wget -O _tmp/hypriotos.zip ${HYPRIOTOS_IMAGE}
-    unzip _tmp/hypriotos.zip -d _tmp
-    mv _tmp/hypriotos-*.img _tmp/hypriotos.img
-    touch _tmp/acme.json
-    chmod 600 _tmp/acme.json
+    wget -O ${TMP_PATH}/flash ${FLASH_SCRIPT}
+    chmod +x ${TMP_PATH}/flash
+    wget -O ${TMP_PATH}/hypriotos.zip ${HYPRIOTOS_IMAGE}
+    unzip ${TMP_PATH}/hypriotos.zip -d ${TMP_PATH}
+    mv ${TMP_PATH}/hypriotos-*.img ${TMP_PATH}/hypriotos.img
+    touch ${TMP_PATH}/acme.json
+    chmod 600 ${TMP_PATH}/acme.json
+    touch ${TMP_PATH}/home-assistant.log
     render_config
 }
 
@@ -48,11 +50,11 @@ function render_config() {
 }
 
 function flash_sd() {
-    ./tools/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init.yml _tmp/hypriotos.img
+    ${TMP_PATH}/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init.yml ${TMP_PATH}/hypriotos.img
 }
 
 function flash_sd_wifi() {
-    ./tools/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init_wifi.yml --config ${CONFIG_PATH}/hypriot/device_init.yml _tmp/hypriotos.img
+    ${TMP_PATH}/flash --bootconf ${CONFIG_PATH}/hypriot/bootconf.txt --userdata ${CONFIG_PATH}/hypriot/cloud_init_wifi.yml --config ${CONFIG_PATH}/hypriot/device_init.yml ${TMP_PATH}/hypriotos.img
 }
 
 function backup() {
@@ -67,7 +69,9 @@ function export_config() {
     rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
     rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
     # copy acme.json if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ./_tmp/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
+    # copy home-assistant.log if it's not present
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log pirate@${HOSTNAME}.local:/home/pirate/workspace/config/homeassistant/
 
     echo "Config exported"
 }

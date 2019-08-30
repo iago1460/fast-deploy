@@ -1,4 +1,4 @@
-logLevel = "WARN" #DEBUG, INFO, WARN, ERROR, FATAL, PANIC
+logLevel = "INFO" #DEBUG, INFO, WARN, ERROR, FATAL, PANIC
 defaultEntryPoints = ["https", "http"]
 
 [traefikLog]
@@ -31,9 +31,9 @@ defaultEntryPoints = ["https", "http"]
 
 [retry]
 
-[file]
-  watch = true
-  filename = "/etc/traefik/rules.toml"
+#[file]
+#  watch = true
+#  filename = "/etc/traefik/rules.toml"
 
 # Let's encrypt configuration
 [acme]
