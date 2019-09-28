@@ -16,7 +16,7 @@ users:
       - ssh-rsa {{ SSH_ID_RSA_PUB }}
 
 package_update: true
-package_upgrade: false
+package_upgrade: true
 package_reboot_if_required: true
 packages:
   - ntp

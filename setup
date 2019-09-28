@@ -58,7 +58,7 @@ function flash_sd_wifi() {
 }
 
 function backup() {
-    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./backup/${HOSTNAME}/
+    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./backup/${HOSTNAME}-$(date '+%Y-%m-%d')/
     echo "Data imported"
 }
 
@@ -72,6 +72,8 @@ function export_config() {
     rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
     # copy home-assistant.log if it's not present
     rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log pirate@${HOSTNAME}.local:/home/pirate/workspace/config/homeassistant/
+    # copy .bash_profile if it's not present
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/config/hypriot/.bash_profile pirate@${HOSTNAME}.local:/home/pirate/
 
     echo "Config exported"
 }

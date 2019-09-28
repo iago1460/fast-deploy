@@ -76,8 +76,6 @@ Let's connect to the pi and run the system:
     
     ssh pirate@${HOSTNAME}.local
     
-    cd workspace
-    source .env
     docker-compose up -d
 
 Once all works, import the data from rpi and store it in a safe place

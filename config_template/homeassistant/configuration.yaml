@@ -11,13 +11,12 @@ sensor:
 tts:
   - platform: google_translate
 
-group: !include groups.yaml
-automation: !include automations.yaml
-script: !include scripts.yaml
-
 # Custom config
 mqtt:
   broker: 127.0.0.1
+
+recorder:
+  db_url: postgresql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@127.0.0.1/postgres
 
 http:
   base_url: {{ FQSN }}

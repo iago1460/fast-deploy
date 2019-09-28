@@ -1,0 +1,2 @@
+cd workspace
+source .env

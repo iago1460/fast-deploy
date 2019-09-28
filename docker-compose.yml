@@ -106,6 +106,18 @@ services:
       - ./config/appdaemon/:/conf/
     restart: unless-stopped
 
+  postgres:
+    container_name: postgres
+    image: $DOCKER_IMAGE_POSTGRES
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: postgres
+
   mosquitto:
     image: $DOCKER_IMAGE_MOSQUITTO
     container_name: mosquitto
@@ -154,6 +166,11 @@ services:
       - "traefik.protocol=http"
       - "traefik.frontend.auth.basic.users=${AUTH_BASIC}"
       - "traefik.frontend.auth.digest.removeHeader=true"
+
+volumes:
+  database_data:
+    name: database_data
+
 
 #networks:
 #  traefik_proxy:
