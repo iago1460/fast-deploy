@@ -1,5 +1,9 @@
 appdaemon:
-  threads: 10
+  latitude: {{ LATITUDE }}
+  longitude: {{ LONGITUDE }}
+  elevation: {{ ELEVATION }}
+  time_zone: {{ TZ }}
+  production_mode: True
   plugins:
     HASS:
       type: hass
