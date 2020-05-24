@@ -42,6 +42,12 @@ function init() {
     touch ${TMP_PATH}/acme.json
     chmod 600 ${TMP_PATH}/acme.json
     touch ${TMP_PATH}/home-assistant.log
+
+    # mkdir -p ${TMP_PATH}/config/pihole/data
+    # mkdir -p ${TMP_PATH}/config/pihole/dnsmasq
+    # mkdir -p ${TMP_PATH/config}/pihole/log
+    touch ${TMP_PATH}/pihole.log
+
     render_config
 }
 
@@ -58,7 +64,7 @@ function flash_sd_wifi() {
 }
 
 function backup() {
-    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}.local:/home/pirate/workspace/config/ ./backup/${HOSTNAME}-$(date '+%Y-%m-%d')/
+    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}:/home/pirate/workspace/config/ ./backup/${HOSTNAME}-$(date '+%Y-%m-%d')/
     echo "Data imported"
 }
 
@@ -66,14 +72,16 @@ function backup() {
 function export_config() {
     render_config
 
-    rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}.local:/home/pirate/workspace/
-    rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ pirate@${HOSTNAME}.local:/home/pirate/workspace/config/
+    rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}:/home/pirate/workspace/
+    rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ pirate@${HOSTNAME}:/home/pirate/workspace/config/
     # copy acme.json if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json pirate@${HOSTNAME}.local:/home/pirate/workspace/config/traefik/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json pirate@${HOSTNAME}:/home/pirate/workspace/config/traefik/
     # copy home-assistant.log if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log pirate@${HOSTNAME}.local:/home/pirate/workspace/config/homeassistant/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log pirate@${HOSTNAME}:/home/pirate/workspace/config/homeassistant/
     # copy .bash_profile if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/config/hypriot/.bash_profile pirate@${HOSTNAME}.local:/home/pirate/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/config/hypriot/.bash_profile pirate@${HOSTNAME}:/home/pirate/
+    # copy .pihole.log if it's not present
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/pihole.log pirate@${HOSTNAME}:/home/pirate/workspace/config/pihole/log/
 
     echo "Config exported"
 }
