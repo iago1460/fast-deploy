@@ -1,0 +1,58 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: :443
+    http:
+      tls:
+        certResolver: default
+
+
+certificatesResolvers:
+  default:
+    acme:
+      email: '{{ EMAIL }}'
+      storage: /etc/traefik/acme.json
+      dnsChallenge:
+        provider: duckdns
+#      domains:
+#        - main: '*.{{ FQSN }}'
+#          sans:
+#            - {{ FQSN }}
+
+providers:
+  providersThrottleDuration: 2s
+  file:
+    watch: true
+    directory: /etc/traefik/providers/
+  docker:
+    watch: true
+    endpoint: unix:///var/run/docker.sock
+    swarmModeRefreshSeconds: 15s
+    exposedByDefault: false
+
+api:
+  dashboard: true
+
+log:
+  level: DEBUG
+  format: json
+  filePath: /etc/traefik/logs/traefik.log
+
+accessLog:
+  filePath: /etc/traefik/logs/access.log
+  bufferingSize: 10
+  format: json
+  filters:
+    statusCodes:
+    - 400-499
+    retryAttempts: true

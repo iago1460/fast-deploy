@@ -7,38 +7,36 @@ services:
     container_name: traefik
     restart: unless-stopped
     domainname: ${FQSN}
-    network_mode: host
-#    networks:
-#      traefik_proxy:
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
+#    dns:
+#      - ${HOST_IP}
+#      - 8.8.8.8
     environment:
       - DUCKDNS_TOKEN=${DUCKDNS_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./config/traefik/traefik.toml:/etc/traefik/traefik.toml
-      - ./config/traefik/acme.json:/etc/traefik/acme/acme.json
+      - ./config/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./config/traefik/providers/:/etc/traefik/providers/
+      - ./config/traefik/auth/:/etc/traefik/auth/
+      - ./config/traefik/acme.json:/etc/traefik/acme.json
       - ./config/traefik/logs/:/etc/traefik/logs/
     labels:
-      - "traefik.enable=true"
-      - "traefik.backend=traefik"
-      - "traefik.frontend.rule=Host:${FQSN}; PathPrefixStrip: /traefik"
-      - "traefik.port=8080"
+#      - "traefik.enable=true"
+#      - "traefik.http.services.traefik-service.loadbalancer.server.port=8080"
 
-      - "traefik.frontend.auth.basic.users=${AUTH_BASIC}"
-      - "traefik.frontend.auth.digest.removeHeader=true"
+      - "traefik.http.routers.traefik.rule=Host(`${FQSN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls=true"
 
-      - "traefik.frontend.headers.SSLRedirect=true"
-      - "traefik.frontend.headers.STSSeconds=315360000"
-      - "traefik.frontend.headers.browserXSSFilter=true"
-      - "traefik.frontend.headers.contentTypeNosniff=true"
-      - "traefik.frontend.headers.forceSTSHeader=true"
-      - "traefik.frontend.headers.SSLHost=${FQSN}"
-      - "traefik.frontend.headers.STSIncludeSubdomains=true"
-      - "traefik.frontend.headers.STSPreload=true"
-      - "traefik.frontend.headers.frameDeny=true"
+#      - "traefik.http.routers.traefik.middlewares=auth"
+#      - "traefik.http.middlewares.auth.basicauth.users=${AUTH_BASIC}"
+#      - "traefik.http.middlewares.auth.basicauth.removeheader=true"
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
 
   fail2ban-docker:
     image: $DOCKER_IMAGE_FAIL2BAN
@@ -88,12 +86,13 @@ services:
 #      traefik_proxy:
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=Host:${FQSN}"
-      - "traefik.frontend.headers.STSSeconds=15552000"
-      - "traefik.port=8123"
-      - "traefik.protocol=http"
-      - "traefik.frontend.whiteList.useXForwardedFor=true"
-      - "traefik.frontend.passHostHeader=true"
+
+      - "traefik.http.routers.homeassistant.rule=Host(`${FQSN}`)"
+      - "traefik.http.routers.homeassistant.entrypoints=websecure"
+      - "traefik.http.routers.blog.tls=true"
+
+#      - "traefik.http.routers.homeassistant.tls=true"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
 
   appdaemon:
     container_name: appdaemon
@@ -158,14 +157,58 @@ services:
       - DEBUG_ZDP=0
       - DEBUG_OTAU=0
       - DECONZ_DEVICE=/dev/ttyACM0
-    labels:
-      - "traefik.enable=false"
-      - "traefik.frontend.rule=Host:${FQSN}; PathPrefixStrip: /deconz"
-      - "traefik.port=1080"
 
-      - "traefik.protocol=http"
-      - "traefik.frontend.auth.basic.users=${AUTH_BASIC}"
-      - "traefik.frontend.auth.digest.removeHeader=true"
+
+# sudo systemctl stop systemd-resolved
+# nano /etc/systemd/resolved.conf
+#  sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+#[Resolve]
+#DNS=8.8.8.8
+#DNSStubListener=no
+  pihole:
+    image: ${DOCKER_IMAGE_PIHOLE}
+    container_name: pihole
+    restart: unless-stopped
+#    network_mode: host
+    cap_add:
+      - CAP_NET_BIND_SERVICE
+#      - CAP_NET_RAW  # DHCP
+#      - CAP_NET_ADMIN  # DHCP
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    ports:
+      - '0.0.0.0:53:53/tcp'
+      - '0.0.0.0:53:53/udp'
+      - '0.0.0.0:8888:8888'
+##      - '0.0.0.0:67:67/udp'  # DHCP
+##      - '0.0.0.0:8053:80/tcp'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/pihole/data/:/etc/pihole/
+      - ./config/pihole/dnsmasqd/:/etc/dnsmasq.d/
+      - ./config/pihole/log/:/var/log/pihole/
+    environment:
+      - PUID
+      - PGID
+      - ServerIP=${HOST_IP}
+#      - PROXY_LOCATION=pihole
+#      - VIRTUAL_HOST=${FQSN}
+      - VIRTUAL_PORT=8888
+      - WEB_PORT=8888
+      - WEBPASSWORD=${PI_HOLE_PASSWORD}
+    extra_hosts:
+      # Resolve to nothing domains (terminate connection)
+      - "nw2master.bioware.com nwn2.master.gamespy.com:0.0.0.0"
+      # LAN hostnames for other docker containers
+      - "${FQSN}:${HOST_IP}"
+#      - "pihole pihole.${FQSN}:${HOST_IP}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.rule=HostRegexp(`{any:.+}`)"
+      - "traefik.http.routers.pihole.entrypoints=web, websecure"
+      - "traefik.http.routers.pihole.priority=1"
+      - "traefik.http.services.pihole.loadbalancer.server.port=8888"
 
 volumes:
   database_data:
