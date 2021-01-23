@@ -2,15 +2,6 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
-# Sensors
-sensor:
-  # Weather prediction
-  - platform: yr
-
-# Text to speech
-tts:
-  - platform: google_translate
-
 # Custom config
 mqtt:
   broker: 127.0.0.1
@@ -19,7 +10,6 @@ recorder:
   db_url: postgresql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@127.0.0.1/postgres
 
 http:
-  base_url: {{ FQSN }}
   use_x_forwarded_for: True
   trusted_proxies: 127.0.0.1
   ip_ban_enabled: True
@@ -27,6 +17,8 @@ http:
 
 homeassistant:
   time_zone: {{ TZ }}
+  external_url: "https://{{ FQSN }}"
+  internal_url: "http://{{ HOST_IP }}:8123"
   auth_providers:
     - type: homeassistant
     - type: trusted_networks

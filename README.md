@@ -5,7 +5,7 @@ Setup and deploy projects through docker in the Raspberry Pi.
 Specifically this guide sets up a [Duck DNS](https://www.duckdns.org) domain over HTTPS 
 running [Home Assistant](https://www.home-assistant.io) secured with [Fail2ban](https://www.fail2ban.org).
 
-This setup has been develop against the raspberry pi 3 (ARM version 7).
+This setup has been develop against the raspberry pi 2 / 3 (ARM version 7 / 8).
 Check the architecture of your system and tweak the docker images accordingly.
 
 ## Content
