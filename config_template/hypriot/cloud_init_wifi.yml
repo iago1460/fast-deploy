@@ -5,7 +5,7 @@ manage_etc_hosts: true
 apt_preserve_sources_list: true
 
 users:
-  - name: pirate
+  - name: {{ USERNAME }}
     primary-group: users
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -36,8 +36,8 @@ write_files:
       ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
       update_config=1
       network={
-      ssid="{{ WIFI_SSID }}"
-      psk="{{ WIFI_PASSWORD }}"
+      ssid="{{ WLAN_SSID }}"
+      psk="{{ WLAN_PASSWORD }}"
       proto=RSN
       key_mgmt=WPA-PSK
       pairwise=CCMP

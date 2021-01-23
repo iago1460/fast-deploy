@@ -8,5 +8,5 @@ hostname: {{ HOSTNAME }}
 wifi:
   interfaces:
     wlan0:
-      ssid: "{{ WIFI_SSID }}"
-      password: "{{ WIFI_PASSWORD }}"
+      ssid: "{{ WLAN_SSID }}"
+      password: "{{ WLAN_PASSWORD }}"

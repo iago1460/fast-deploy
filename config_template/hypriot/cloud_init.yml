@@ -5,7 +5,7 @@ manage_etc_hosts: true
 apt_preserve_sources_list: true
 
 users:
-  - name: pirate
+  - name: {{ USERNAME }}
     primary-group: users
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL

@@ -23,7 +23,6 @@ EOF
   exit 1
 }
 
-TMP_PATH=$(pwd)/_tmp
 CONFIG_TEMPLATE_PATH=$(pwd)/config_template
 CONFIG_PATH=${TMP_PATH}/config
 VAR_FILE_PATH=$(pwd)/.env
@@ -64,7 +63,7 @@ function flash_sd_wifi() {
 }
 
 function backup() {
-    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" pirate@${HOSTNAME}:/home/pirate/workspace/config/ ./backup/${HOSTNAME}-$(date '+%Y-%m-%d')/
+    rsync -r -a -v --delete -e ssh --rsync-path="sudo rsync" ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/config/ ./backup/${HOST_IP}-$(date '+%Y-%m-%d')/
     echo "Data imported"
 }
 
@@ -72,16 +71,16 @@ function backup() {
 function export_config() {
     render_config
 
-    rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env pirate@${HOSTNAME}:/home/pirate/workspace/
-    rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ pirate@${HOSTNAME}:/home/pirate/workspace/config/
+    rsync -a --no-o --no-g -v -z -e ssh ./docker-compose.yml ./.env ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/
+    rsync -a --no-o --no-g -r -v -e ssh ${CONFIG_PATH}/ ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/config/
     # copy acme.json if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json pirate@${HOSTNAME}:/home/pirate/workspace/config/traefik/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/acme.json ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/config/traefik/
     # copy home-assistant.log if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log pirate@${HOSTNAME}:/home/pirate/workspace/config/homeassistant/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/home-assistant.log ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/config/homeassistant/
     # copy .bash_profile if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/config/hypriot/.bash_profile pirate@${HOSTNAME}:/home/pirate/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/config/hypriot/.bash_profile ${USERNAME}@${HOST_IP}:/home/${USERNAME}/
     # copy .pihole.log if it's not present
-    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/pihole.log pirate@${HOSTNAME}:/home/pirate/workspace/config/pihole/log/
+    rsync --ignore-existing -a --no-o --no-g -v -z -e ssh ${TMP_PATH}/pihole.log ${USERNAME}@${HOST_IP}:/home/${USERNAME}/workspace/config/pihole/log/
 
     echo "Config exported"
 }

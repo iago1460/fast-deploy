@@ -74,7 +74,7 @@ Once the system is up, send the config through ssh:
     
 Let's connect to the pi and run the system:
     
-    ssh pirate@${HOSTNAME}.local
+    ssh ${USERNAME}@${HOSTNAME}.local
     
     docker-compose up -d
 
