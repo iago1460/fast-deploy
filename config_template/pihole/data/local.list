@@ -1,0 +1,3 @@
+{{ HOST_IP }} {{ FQSN }}
+{{ HOST_IP }} assistant
+{{ HOST_IP }} pi.hole
